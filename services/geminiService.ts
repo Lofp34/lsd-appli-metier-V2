@@ -63,7 +63,11 @@ Objet JSON attendu:
       },
     });
 
-    let jsonStr = response.text.trim();
+    let jsonStr = response.text?.trim() || '';
+    if (!jsonStr) {
+      throw new Error('Réponse vide du service IA');
+    }
+
     const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
     const match = jsonStr.match(fenceRegex);
     if (match && match[2]) {
@@ -98,7 +102,7 @@ export const generateCommercialProposal = async (transcript: string): Promise<st
         systemInstruction: COMMERCIAL_PROPOSAL_SYSTEM_INSTRUCTION,
       },
     });
-    return response.text;
+    return response.text || '';
   } catch (error) {
     console.error('Error calling Gemini API for commercial proposal:', error);
     if (error instanceof Error) {

@@ -140,7 +140,6 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
   yPos = Math.max(yPos, yPosRight) + 10; // Ensure yPos is below both columns
 
   // --- Table ---
-  const _tableStartY = yPos; // Table starting position (kept for reference)
   const colWidths = [
     contentWidth * 0.48,
     contentWidth * 0.12,
