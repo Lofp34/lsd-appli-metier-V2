@@ -18,10 +18,10 @@
           "value": "require-corp"
         },
         {
-          "key": "Cross-Origin-Opener-Policy", 
+          "key": "Cross-Origin-Opener-Policy",
           "value": "same-origin"
         }
       ]
     }
   ]
-} 
+}

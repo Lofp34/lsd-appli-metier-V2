@@ -2,32 +2,46 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-      css: {
-        postcss: './postcss.config.js',
+  const env = loadEnv(mode, '.', '');
+  return {
+    css: {
+      postcss: './postcss.config.js',
+    },
+    define: {
+      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.'),
       },
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+    },
+    server: {
+      headers: {
+        'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Opener-Policy': 'same-origin',
       },
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '.'),
-        }
+    },
+    build: {
+      target: 'esnext',
+      minify: 'esbuild',
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            pdf: ['pdfjs-dist'],
+            ai: ['@google/genai'],
+          },
+        },
       },
-      server: {
-        headers: {
-          'Cross-Origin-Embedder-Policy': 'require-corp',
-          'Cross-Origin-Opener-Policy': 'same-origin',
-        }
-      },
-      optimizeDeps: {
-        include: ['pdfjs-dist']
-      },
-      assetsInclude: ['**/*.wasm'],
-      worker: {
-        format: 'es'
-      }
-    };
+    },
+    optimizeDeps: {
+      include: ['pdfjs-dist', '@google/genai', 'jspdf', 'marked'],
+    },
+    assetsInclude: ['**/*.wasm'],
+    worker: {
+      format: 'es',
+    },
+  };
 });

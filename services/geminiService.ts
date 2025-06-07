@@ -1,4 +1,4 @@
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
 import { ConventionData } from '../types';
 import { COMMERCIAL_PROPOSAL_SYSTEM_INSTRUCTION } from '../constants';
 
@@ -8,15 +8,17 @@ if (!API_KEY) {
   // This will be caught by the app and displayed to the user if API_KEY is not set.
   // However, per instructions, we assume API_KEY is pre-configured.
   // This check is more for development robustness.
-  console.error("API_KEY for Gemini is not configured in environment variables.");
+  console.error('API_KEY for Gemini is not configured in environment variables.');
 }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY! });
 const modelName = 'gemini-2.5-flash-preview-04-17';
 
-export const extractConventionDataFromTranscript = async (transcript: string): Promise<Partial<ConventionData>> => {
+export const extractConventionDataFromTranscript = async (
+  transcript: string
+): Promise<Partial<ConventionData>> => {
   if (!API_KEY) {
-    throw new Error("API_KEY for Gemini is not configured.");
+    throw new Error('API_KEY for Gemini is not configured.');
   }
 
   const prompt = `
@@ -57,7 +59,7 @@ Objet JSON attendu:
       model: modelName,
       contents: prompt,
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
       },
     });
 
@@ -67,24 +69,23 @@ Objet JSON attendu:
     if (match && match[2]) {
       jsonStr = match[2].trim();
     }
-    
-    return JSON.parse(jsonStr) as Partial<ConventionData>;
 
+    return JSON.parse(jsonStr) as Partial<ConventionData>;
   } catch (error) {
-    console.error("Error calling Gemini API for convention data extraction:", error);
+    console.error('Error calling Gemini API for convention data extraction:', error);
     if (error instanceof Error) {
-        throw new Error(`Failed to extract data from transcript: ${error.message}`);
+      throw new Error(`Failed to extract data from transcript: ${error.message}`);
     }
-    throw new Error("Failed to extract data from transcript due to an unknown error.");
+    throw new Error('Failed to extract data from transcript due to an unknown error.');
   }
 };
 
 export const generateCommercialProposal = async (transcript: string): Promise<string> => {
   if (!API_KEY) {
-    throw new Error("API_KEY for Gemini is not configured.");
+    throw new Error('API_KEY for Gemini is not configured.');
   }
   if (!transcript.trim()) {
-    throw new Error("Transcript cannot be empty for proposal generation.");
+    throw new Error('Transcript cannot be empty for proposal generation.');
   }
 
   const userPrompt = `À partir de la transcription suivante, agis selon ton instruction système pour générer une proposition commerciale.\n\nTranscription:\n---\n${transcript}\n---`;
@@ -99,10 +100,10 @@ export const generateCommercialProposal = async (transcript: string): Promise<st
     });
     return response.text;
   } catch (error) {
-    console.error("Error calling Gemini API for commercial proposal:", error);
+    console.error('Error calling Gemini API for commercial proposal:', error);
     if (error instanceof Error) {
       throw new Error(`Failed to generate commercial proposal: ${error.message}`);
     }
-    throw new Error("Failed to generate commercial proposal due to an unknown error.");
+    throw new Error('Failed to generate commercial proposal due to an unknown error.');
   }
 };
