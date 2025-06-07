@@ -1,0 +1,6 @@
+{
+  "name": "Copy of Convention Data Extractor",
+  "description": "Extracts training convention details from a sales meeting transcript using Gemini API and allows editing of the extracted data.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
