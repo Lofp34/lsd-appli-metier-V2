@@ -1,7 +1,8 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configuration du worker PDF.js avec unpkg CDN (plus compatible avec Vite)
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@5.3.31/build/pdf.worker.min.js';
+// Configuration du worker PDF.js avec fichier local dans public/
+// Ce fichier est servi directement par Vite comme asset statique
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 export const parsePdfToText = async (file: File): Promise<string> => {
   try {
