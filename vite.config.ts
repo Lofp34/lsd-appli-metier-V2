@@ -21,6 +21,10 @@ export default defineConfig(({ mode }) => {
       },
       optimizeDeps: {
         include: ['pdfjs-dist']
+      },
+      assetsInclude: ['**/*.wasm'],
+      worker: {
+        format: 'es'
       }
     };
 });

@@ -1,8 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configuration du worker PDF.js pour la version 5.3.31
-// Utilisation du CDN jsDelivr pour assurer la compatibilité des versions
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@5.3.31/build/pdf.worker.min.js`;
+// Configuration du worker PDF.js avec unpkg CDN (plus compatible avec Vite)
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@5.3.31/build/pdf.worker.min.js';
 
 export const parsePdfToText = async (file: File): Promise<string> => {
   try {
