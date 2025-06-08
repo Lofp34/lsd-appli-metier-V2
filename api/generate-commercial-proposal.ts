@@ -1,33 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// System instruction for commercial proposal
-const COMMERCIAL_PROPOSAL_SYSTEM_INSTRUCTION = `Tu es un expert en rédaction de propositions commerciales pour Laurent Serre Développement (LSD), société spécialisée dans l'accompagnement commercial et la formation. Ton rôle est de créer une proposition commerciale persuasive, professionnelle et personnalisée basée sur la transcription d'un entretien commercial.
+// Optimized system instruction - shorter and more focused
+const COMMERCIAL_PROPOSAL_SYSTEM_INSTRUCTION = `Tu es un expert en propositions commerciales pour Laurent Serre Développement. Génère une proposition concise et professionnelle (maximum 800 mots) avec cette structure :
 
-Structure de la proposition :
-1. Résumé exécutif
-2. Compréhension des besoins
-3. Solution proposée
-4. Méthodologie d'accompagnement
-5. Bénéfices attendus
-6. Conditions et tarifs
-7. Prochaines étapes
+1. **Résumé exécutif** (2-3 lignes)
+2. **Besoins identifiés** (3-4 points)
+3. **Solution proposée** (méthodologie en 4-5 points)
+4. **Bénéfices attendus** (3-4 résultats mesurables)
+5. **Prochaines étapes** (2-3 actions)
 
-Style et ton :
-- Professionnel mais accessible
-- Confiant et rassurant
-- Personnalisé selon les informations de l'entretien
-- Orienté résultats concrets
-- Utilise les termes métier appropriés
-
-Éléments clés à intégrer :
-- Reprendre les points de douleur mentionnés
-- Faire référence aux objectifs exprimés
-- Personnaliser selon le secteur d'activité
-- Proposer des indicateurs de performance mesurables
-- Inclure des références à l'expertise de Laurent Serre
-- Mentionner la garantie de résultats si approprié
-
-Format de sortie : Markdown avec titres, listes et mise en forme appropriée.`;
+Style : professionnel, personnalisé, orienté résultats. Format Markdown.`;
 
 async function callGeminiAPI(prompt: string, systemInstruction: string) {
   const API_KEY = process.env.GEMINI_API_KEY;
@@ -36,8 +18,9 @@ async function callGeminiAPI(prompt: string, systemInstruction: string) {
     throw new Error('GEMINI_API_KEY is not configured');
   }
 
+  // Use faster model and optimized config
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,
     {
       method: 'POST',
       headers: {
@@ -59,6 +42,11 @@ async function callGeminiAPI(prompt: string, systemInstruction: string) {
               text: systemInstruction
             }
           ]
+        },
+        generationConfig: {
+          maxOutputTokens: 1000,  // Limit output length
+          temperature: 0.7,       // Balanced creativity
+          topP: 0.9              // Optimize for speed
         }
       }),
     }
@@ -96,12 +84,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Transcript cannot be empty for proposal generation.' });
   }
 
-  const userPrompt = `À partir de la transcription suivante, agis selon ton instruction système pour générer une proposition commerciale.
+  // Simplified and shorter prompt
+  const userPrompt = `Génère une proposition commerciale concise pour Laurent Serre Développement basée sur cette transcription d'entretien :
 
-Transcription:
----
 ${transcript}
----`;
+
+Concentre-toi sur les points de douleur identifiés et propose une solution d'accompagnement commercial adaptée.`;
 
   try {
     const proposalText = await callGeminiAPI(userPrompt, COMMERCIAL_PROPOSAL_SYSTEM_INSTRUCTION);

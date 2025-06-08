@@ -5,10 +5,10 @@
   "framework": "vite",
   "functions": {
     "api/extract-convention-data.ts": {
-      "maxDuration": 30
+      "maxDuration": 15
     },
     "api/generate-commercial-proposal.ts": {
-      "maxDuration": 30
+      "maxDuration": 15
     }
   },
   "rewrites": [
