@@ -3,6 +3,14 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
+  "functions": {
+    "api/extract-convention-data.ts": {
+      "maxDuration": 30
+    },
+    "api/generate-commercial-proposal.ts": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
