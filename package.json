@@ -12,7 +12,8 @@
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@google/genai": "^1.4.0",
@@ -40,6 +41,7 @@
     "globals": "^15.14.0",
     "postcss": "^8.4.35",
     "prettier": "^3.4.2",
+    "sharp": "^0.34.2",
     "tailwindcss": "^3.4.13",
     "typescript": "~5.7.2",
     "vite": "^6.2.0"
