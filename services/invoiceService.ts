@@ -147,7 +147,7 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
     contentWidth * 0.1,
     contentWidth * 0.15,
   ];
-  const headerHeight = 8;
+  const headerHeight = 10;
   const cellPadding = 2;
 
   // Table Headers
@@ -159,38 +159,19 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
 
   let currentX = margin + cellPadding;
   pdf.text('Description', currentX, yPos + headerHeight / 2 + 2);
+  
   currentX += colWidths[0];
-  pdf.text('Quantité', currentX, yPos + headerHeight / 2 + 2, { align: 'center' });
+  pdf.text('Quantité', currentX + colWidths[1] / 2, yPos + headerHeight / 2 + 2, { align: 'center' });
+  
   currentX += colWidths[1];
-  pdf.text(
-    'PU HT',
-    currentX +
-      colWidths[2] -
-      cellPadding -
-      pdf.getStringUnitWidth('PU HT') * pdf.getFontSize() * 0.35,
-    yPos + headerHeight / 2 + 2,
-    { align: 'right' }
-  );
+  pdf.text('PU HT', currentX + colWidths[2] / 2, yPos + headerHeight / 2 + 2, { align: 'center' });
+  
   currentX += colWidths[2];
-  pdf.text(
-    'Taux de TVA',
-    currentX +
-      colWidths[3] -
-      cellPadding -
-      pdf.getStringUnitWidth('Taux de TVA') * pdf.getFontSize() * 0.35,
-    yPos + headerHeight / 2 + 2,
-    { align: 'right' }
-  );
+  pdf.text('Taux de', currentX + colWidths[3] / 2, yPos + headerHeight / 2 + 1, { align: 'center' });
+  pdf.text('TVA', currentX + colWidths[3] / 2, yPos + headerHeight / 2 + 3, { align: 'center' });
+  
   currentX += colWidths[3];
-  pdf.text(
-    'Montant HT',
-    currentX +
-      colWidths[4] -
-      cellPadding * 2 -
-      pdf.getStringUnitWidth('Montant HT') * pdf.getFontSize() * 0.35,
-    yPos + headerHeight / 2 + 2,
-    { align: 'right' }
-  );
+  pdf.text('Montant HT', currentX + colWidths[4] / 2, yPos + headerHeight / 2 + 2, { align: 'center' });
 
   yPos += headerHeight;
 
