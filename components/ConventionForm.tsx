@@ -15,6 +15,7 @@ interface ConventionFormProps {
   commercialProposal: string | null;
   proposalError: string | null;
   hasTranscript: boolean;
+  isManualEntry?: boolean; // Nouvelle prop pour indiquer si c'est une saisie manuelle
 }
 
 const ConventionForm: React.FC<ConventionFormProps> = ({
@@ -26,6 +27,7 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
   commercialProposal,
   proposalError,
   hasTranscript,
+  isManualEntry,
 }) => {
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState<boolean>(false);
   const [invoiceGenerationError, setInvoiceGenerationError] = useState<string | null>(null);
@@ -140,17 +142,16 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
         </button>
       </div>
 
+      {/* Section 3: Facturation */}
       <div className="mt-8 pt-6 border-t border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-700 mb-4">
-          3. Proposition Commerciale Assistée par IA
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-700 mb-4">3. Facturation</h2>
         <button
-          onClick={onGenerateProposal}
-          disabled={isGeneratingProposal || !hasTranscript}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-md shadow-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          aria-label="Générer la proposition commerciale à partir de la transcription"
+          onClick={handleGenerateInvoice}
+          disabled={isGeneratingInvoice}
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-md shadow-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          aria-label="Créer la facture au format PDF"
         >
-          {isGeneratingProposal ? (
+          {isGeneratingInvoice ? (
             <>
               <svg
                 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -172,70 +173,56 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Génération en cours...
+              Génération de la facture...
             </>
           ) : (
             <>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
+                viewBox="0 0 20 20"
+                fill="currentColor"
               >
+                <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9.663 17h4.673M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 10h.01M15 10h.01M9 14h.01M15 14h.01"
+                  fillRule="evenodd"
+                  d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h2a1 1 0 100-2H9z"
+                  clipRule="evenodd"
                 />
               </svg>
-              Générer la Proposition Commerciale
+              Créer la Facture (.pdf)
             </>
           )}
         </button>
-        {isGeneratingProposal && (
+        {isGeneratingInvoice && (
           <div className="mt-4">
             <LoadingSpinner />
           </div>
         )}
-        {proposalError && (
+        {invoiceGenerationError && (
           <div
             className="mt-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-md"
             role="alert"
           >
-            <p className="font-bold">Erreur de Génération de Proposition</p>
-            <p>{proposalError}</p>
-          </div>
-        )}
-        {commercialProposal && !isGeneratingProposal && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Proposition Générée :</h3>
-            <div
-              className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none p-3 border border-gray-300 rounded-md bg-gray-50 h-96 overflow-y-auto focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-              dangerouslySetInnerHTML={getSanitizedHtml(commercialProposal)}
-              aria-label="Proposition commerciale générée"
-            />
+            <p className="font-bold">Erreur de Génération de Facture</p>
+            <p>{invoiceGenerationError}</p>
           </div>
         )}
       </div>
 
-      {/* Section 4: Facturation */}
-      {commercialProposal && !isGeneratingProposal && (
+      {/* Section 4: Proposition Commerciale - Uniquement si transcription disponible */}
+      {hasTranscript && !isManualEntry && (
         <div className="mt-8 pt-6 border-t border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">4. Facturation</h2>
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+            4. Proposition Commerciale Assistée par IA
+          </h2>
           <button
-            onClick={handleGenerateInvoice}
-            disabled={isGeneratingInvoice}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-md shadow-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            aria-label="Créer la facture au format PDF"
+            onClick={onGenerateProposal}
+            disabled={isGeneratingProposal || !hasTranscript}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-md shadow-sm transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            aria-label="Générer la proposition commerciale à partir de la transcription"
           >
-            {isGeneratingInvoice ? (
+            {isGeneratingProposal ? (
               <>
                 <svg
                   className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -257,41 +244,78 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Génération de la facture...
+                Génération en cours...
               </>
             ) : (
               <>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
                 >
-                  <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
                   <path
-                    fillRule="evenodd"
-                    d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h2a1 1 0 100-2H9z"
-                    clipRule="evenodd"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.663 17h4.673M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 10h.01M15 10h.01M9 14h.01M15 14h.01"
                   />
                 </svg>
-                Créer la Facture (.pdf)
+                Générer la Proposition Commerciale
               </>
             )}
           </button>
-          {isGeneratingInvoice && (
+          {isGeneratingProposal && (
             <div className="mt-4">
               <LoadingSpinner />
             </div>
           )}
-          {invoiceGenerationError && (
+          {proposalError && (
             <div
               className="mt-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-md"
               role="alert"
             >
-              <p className="font-bold">Erreur de Génération de Facture</p>
-              <p>{invoiceGenerationError}</p>
+              <p className="font-bold">Erreur de Génération de Proposition</p>
+              <p>{proposalError}</p>
             </div>
           )}
+          {commercialProposal && !isGeneratingProposal && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Proposition Générée :</h3>
+              <div
+                className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none p-3 border border-gray-300 rounded-md bg-gray-50 h-96 overflow-y-auto focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+                dangerouslySetInnerHTML={getSanitizedHtml(commercialProposal)}
+                aria-label="Proposition commerciale générée"
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Message informatif pour la saisie manuelle */}
+      {isManualEntry && (
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-amber-800">Mode Saisie Manuelle</h3>
+                <div className="mt-2 text-sm text-amber-700">
+                  <p>Vous êtes en mode saisie manuelle. La génération de proposition commerciale n'est pas disponible car elle nécessite une transcription d'entretien.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

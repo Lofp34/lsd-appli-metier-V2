@@ -16,6 +16,7 @@ const App: React.FC = () => {
   const [isExtractingData, setIsExtractingData] = useState<boolean>(false); // For convention data extraction
   const [extractionError, setExtractionError] = useState<string | null>(null); // For convention data extraction
   const [isExtracted, setIsExtracted] = useState<boolean>(false); // Tracks if extraction has been attempted
+  const [isManualEntry, setIsManualEntry] = useState<boolean>(false); // Nouveau state pour la saisie manuelle
 
   const [commercialProposal, setCommercialProposal] = useState<string | null>(null);
   const [isGeneratingProposal, setIsGeneratingProposal] = useState<boolean>(false);
@@ -30,6 +31,7 @@ const App: React.FC = () => {
       setPdfParseError(null);
       setIsExtracted(false); // Reset extraction status if file is cleared
       setConventionData(INITIAL_CONVENTION_DATA); // Reset form data
+      setIsManualEntry(false); // Reset manual entry mode
       return;
     }
 
@@ -38,6 +40,7 @@ const App: React.FC = () => {
     setTranscript(''); // Clear previous transcript
     setIsExtracted(false);
     setConventionData(INITIAL_CONVENTION_DATA);
+    setIsManualEntry(false); // Reset manual entry mode
 
     try {
       const text = await parsePdfToText(file);
@@ -177,6 +180,21 @@ const App: React.FC = () => {
     }
   }, [transcript]);
 
+  // Nouvelle fonction pour la saisie manuelle
+  const handleManualEntry = useCallback(() => {
+    // Reset all states
+    setTranscript('');
+    setPdfParseError(null);
+    setExtractionError(null);
+    setCommercialProposal(null);
+    setProposalError(null);
+    setConventionData(INITIAL_CONVENTION_DATA);
+    
+    // Activate manual entry mode
+    setIsManualEntry(true);
+    setIsExtracted(true); // Show the form
+  }, []);
+
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8">
       <header className="mb-8 text-center">
@@ -196,6 +214,7 @@ const App: React.FC = () => {
         isExtractingFromTranscript={isExtractingData}
         pdfParseError={pdfParseError}
         transcriptReady={!!transcript.trim() && !isParsingPdf}
+        onManualEntry={handleManualEntry}
       />
 
       {/* This loading spinner is for Gemini API extraction. Parsing has its own indicator. */}
@@ -211,18 +230,19 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {isExtracted && !isExtractingData && (
+      {(isExtracted && !isExtractingData) || isManualEntry ? (
         <ConventionForm
           data={conventionData}
           onDataChange={handleConventionDataChange}
-          isExtracted={isExtracted} // keeps the form visible if an extraction was attempted
+          isExtracted={isExtracted || isManualEntry} // keeps the form visible if an extraction was attempted or manual entry
           onGenerateProposal={handleGenerateProposal}
           isGeneratingProposal={isGeneratingProposal}
           commercialProposal={commercialProposal}
           proposalError={proposalError}
           hasTranscript={!!transcript.trim()}
+          isManualEntry={isManualEntry}
         />
-      )}
+      ) : null}
     </div>
   );
 };
