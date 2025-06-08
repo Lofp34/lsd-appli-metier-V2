@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { marked } from 'marked';
 import { ConventionData, FormFieldConfig } from '../types';
 import { CONVENTION_FORM_FIELDS, CONVENTION_TEMPLATE_STRING } from '../constants';
@@ -18,6 +18,51 @@ interface ConventionFormProps {
   isManualEntry?: boolean; // Nouvelle prop pour indiquer si c'est une saisie manuelle
 }
 
+// Memoized Field Component to prevent unnecessary re-renders
+const FormField = memo<{
+  field: FormFieldConfig;
+  value: string;
+  onChange: (key: keyof ConventionData, value: string) => void;
+}>(({ field, value, onChange }) => {
+  const handleFieldChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    onChange(field.key, e.target.value);
+  }, [field.key, onChange]);
+
+  return (
+    <div className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
+      <label htmlFor={field.key} className="block text-sm font-medium text-gray-700 mb-1">
+        {field.label}
+      </label>
+      {field.type === 'textarea' ? (
+        <textarea
+          id={field.key}
+          name={field.key}
+          rows={field.rows || 3}
+          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+          placeholder={field.placeholder}
+          value={value}
+          onChange={handleFieldChange}
+          aria-label={field.label}
+        />
+      ) : (
+        <input
+          type={field.type || 'text'}
+          id={field.key}
+          name={field.key}
+          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+          placeholder={field.placeholder}
+          value={value}
+          onChange={handleFieldChange}
+          step={field.type === 'number' ? '0.01' : undefined}
+          aria-label={field.label}
+        />
+      )}
+    </div>
+  );
+});
+
+FormField.displayName = 'FormField';
+
 const ConventionForm: React.FC<ConventionFormProps> = ({
   data,
   onDataChange,
@@ -32,15 +77,23 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState<boolean>(false);
   const [invoiceGenerationError, setInvoiceGenerationError] = useState<string | null>(null);
 
-  if (!isExtracted && Object.values(data).every(val => val === '')) {
-    return null;
-  }
+  // Memoize expensive operations
+  const shouldRender = useMemo(() => {
+    return isExtracted || Object.values(data).some(val => val !== '');
+  }, [isExtracted, data]);
 
-  const handleChange = (key: keyof ConventionData, value: string) => {
+  const sanitizedProposalHtml = useMemo(() => {
+    if (!commercialProposal) return { __html: '' };
+    const rawHtml = marked.parse(commercialProposal) as string;
+    return { __html: rawHtml };
+  }, [commercialProposal]);
+
+  // Memoize callbacks to prevent child re-renders
+  const handleDataChange = useCallback((key: keyof ConventionData, value: string) => {
     onDataChange(key, value);
-  };
+  }, [onDataChange]);
 
-  const handleGeneratePdfDocument = () => {
+  const handleGeneratePdfDocument = useCallback(() => {
     if (!data.client_nom || !data.formation_intitule) {
       alert(
         "Veuillez renseigner au moins le nom du client et l'intitulé de la formation avant de générer la convention."
@@ -48,15 +101,9 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
       return;
     }
     generateConventionDocument(data, CONVENTION_TEMPLATE_STRING);
-  };
+  }, [data]);
 
-  const getSanitizedHtml = (markdownText: string | null) => {
-    if (!markdownText) return { __html: '' };
-    const rawHtml = marked.parse(markdownText) as string;
-    return { __html: rawHtml };
-  };
-
-  const handleGenerateInvoice = async () => {
+  const handleGenerateInvoice = useCallback(async () => {
     if (!data.client_nom || !data.formation_intitule || !data.formation_tarif_ht) {
       alert(
         "Veuillez vérifier que le nom du client, l'intitulé de la formation et le tarif HT sont renseignés avant de générer la facture."
@@ -66,7 +113,7 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
     setIsGeneratingInvoice(true);
     setInvoiceGenerationError(null);
     try {
-      await generateInvoiceDocument(data); // Assuming it might be async if it involves complex ops or just for consistency
+      await generateInvoiceDocument(data);
     } catch (error) {
       console.error('Error generating invoice:', error);
       if (error instanceof Error) {
@@ -79,7 +126,11 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
     } finally {
       setIsGeneratingInvoice(false);
     }
-  };
+  }, [data]);
+
+  if (!shouldRender) {
+    return null;
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md mt-8">
@@ -88,35 +139,12 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
         {CONVENTION_FORM_FIELDS.map((field: FormFieldConfig) => (
-          <div key={field.key} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
-            <label htmlFor={field.key} className="block text-sm font-medium text-gray-700 mb-1">
-              {field.label}
-            </label>
-            {field.type === 'textarea' ? (
-              <textarea
-                id={field.key}
-                name={field.key}
-                rows={field.rows || 3}
-                className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                placeholder={field.placeholder}
-                value={data[field.key]}
-                onChange={e => handleChange(field.key, e.target.value)}
-                aria-label={field.label}
-              />
-            ) : (
-              <input
-                type={field.type || 'text'}
-                id={field.key}
-                name={field.key}
-                className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                placeholder={field.placeholder}
-                value={data[field.key]}
-                onChange={e => handleChange(field.key, e.target.value)}
-                step={field.type === 'number' ? '0.01' : undefined}
-                aria-label={field.label}
-              />
-            )}
-          </div>
+          <FormField 
+            key={field.key}
+            field={field}
+            value={data[field.key]}
+            onChange={handleDataChange}
+          />
         ))}
       </div>
       <div className="mt-8 pt-6 border-t border-gray-200">
@@ -290,7 +318,7 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
               <h3 className="text-lg font-semibold text-gray-700 mb-2">Proposition Générée :</h3>
               <div
                 className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none p-3 border border-gray-300 rounded-md bg-gray-50 h-96 overflow-y-auto focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                dangerouslySetInnerHTML={getSanitizedHtml(commercialProposal)}
+                dangerouslySetInnerHTML={sanitizedProposalHtml}
                 aria-label="Proposition commerciale générée"
               />
             </div>
@@ -322,4 +350,4 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
   );
 };
 
-export default ConventionForm;
+export default memo(ConventionForm);
