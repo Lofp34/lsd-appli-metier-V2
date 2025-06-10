@@ -93,14 +93,19 @@ const ConventionForm: React.FC<ConventionFormProps> = ({
     onDataChange(key, value);
   }, [onDataChange]);
 
-  const handleGeneratePdfDocument = useCallback(() => {
+  const handleGeneratePdfDocument = useCallback(async () => {
     if (!data.client_nom || !data.formation_intitule) {
       alert(
         "Veuillez renseigner au moins le nom du client et l'intitulé de la formation avant de générer la convention."
       );
       return;
     }
-    generateConventionDocument(data, CONVENTION_TEMPLATE_STRING);
+    try {
+      await generateConventionDocument(data, CONVENTION_TEMPLATE_STRING);
+    } catch (error) {
+      console.error('Error generating convention:', error);
+      alert('Erreur lors de la génération de la convention. Veuillez réessayer.');
+    }
   }, [data]);
 
   const handleGenerateInvoice = useCallback(async () => {
