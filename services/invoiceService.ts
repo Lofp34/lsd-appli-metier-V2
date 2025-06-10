@@ -69,10 +69,10 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
     if (maxWidth) {
       const splitText = pdf.splitTextToSize(text, maxWidth);
       pdf.text(splitText, x, y, { align });
-      return y + splitText.length * fontSize * 0.35; // Approximate line height
+      return y + splitText.length * fontSize * 0.3; // Reduced line height multiplier from 0.35 to 0.3
     } else {
       pdf.text(text, x, y, { align });
-      return y + fontSize * 0.35; // Approximate line height for a single string
+      return y + fontSize * 0.3; // Reduced line height multiplier from 0.35 to 0.3
     }
   };
 
@@ -81,18 +81,18 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(PRIMARY_BLUE);
   pdf.text('LAURENT SERRE DEVELOPPEMENT', margin, yPos);
-  yPos += 8;
+  yPos += 7; // Reduced from 8
   pdf.setDrawColor(PRIMARY_BLUE);
   pdf.setLineWidth(0.8);
   pdf.line(margin, yPos, pageWidth - margin, yPos);
-  yPos += 12;
+  yPos += 10; // Reduced from 12
 
   // --- FACTURE Title ---
   pdf.setFontSize(18);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(TEXT_COLOR_DARK);
   pdf.text('FACTURE', margin, yPos);
-  yPos += 10;
+  yPos += 8; // Reduced from 10
 
   // --- Company Info (Left) & Invoice Meta (Right) ---
   const col1X = margin;
@@ -103,20 +103,20 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(TEXT_COLOR_DARK);
   pdf.text('SARL LAURENT SERRE', col1X, yPos);
-  yPos += 4;
+  yPos += 3.5; // Reduced from 4
   pdf.setFont('helvetica', 'normal');
   pdf.text('259 rue de la Lavande', col1X, yPos);
-  yPos += 4;
+  yPos += 3.5; // Reduced from 4
   pdf.text('34130 Mauguio', col1X, yPos);
-  yPos += 4;
+  yPos += 3.5; // Reduced from 4
   pdf.text(`SIRET : 43529294100034`, col1X, yPos);
-  yPos += 4;
+  yPos += 3.5; // Reduced from 4
   pdf.text(`N° de TVA intracommunautaire FR344 352 929 41`, col1X, yPos);
-  yPos += 6;
+  yPos += 5; // Reduced from 6
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(PRIMARY_BLUE);
   pdf.text('06 14 94 40 60', col1X, yPos);
-  yPos += 4;
+  yPos += 3.5; // Reduced from 4
   pdf.text('ls@laurentserre.com', col1X, yPos);
 
   let yPosRight = startYInfo;
@@ -132,12 +132,12 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(TEXT_COLOR_DARK);
   pdf.text(`Date : ${formatDate(invoiceDate)}`, col2X, yPosRight);
-  yPosRight += 5;
+  yPosRight += 4; // Reduced from 5
   pdf.text(`Numéro de facture : ${invoiceNumber}`, col2X, yPosRight);
-  yPosRight += 5;
+  yPosRight += 4; // Reduced from 5
   pdf.text(`Termes : immédiat`, col2X, yPosRight);
 
-  yPos = Math.max(yPos, yPosRight) + 10; // Ensure yPos is below both columns
+  yPos = Math.max(yPos, yPosRight) + 8; // Reduced from 10
 
   // --- Table ---
   const colWidths = [
@@ -199,36 +199,36 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
     addText(clientText, descColX, descY, {
       fontSize: 9,
       maxWidth: colWidths[0] - cellPadding * 2,
-    }) + 0.5;
+    }) + 0.3; // Reduced from 0.5
 
   const participantsText = `Bénéficiaire(s) : ${data.participants || 'N/A'}`;
   descY =
     addText(participantsText, descColX, descY, {
       fontSize: 9,
       maxWidth: colWidths[0] - cellPadding * 2,
-    }) + 0.5;
+    }) + 0.3; // Reduced from 0.5
 
   const conventionText = `Convention n° ${data.numero_convention || 'N/A'} du ${data.date_signature || 'N/A'}`;
   descY =
     addText(conventionText, descColX, descY, {
       fontSize: 9,
       maxWidth: colWidths[0] - cellPadding * 2,
-    }) + 0.5;
+    }) + 0.3; // Reduced from 0.5
 
   const stageText = `Intitulé du stage : ${data.formation_intitule || 'Formation personnalisée'}`;
   descY =
     addText(stageText, descColX, descY, { fontSize: 9, maxWidth: colWidths[0] - cellPadding * 2 }) +
-    0.5;
+    0.3; // Reduced from 0.5
 
   const datesText = `Dates de formation : ${data.formation_dates || 'N/A'}`;
   descY =
     addText(datesText, descColX, descY, { fontSize: 9, maxWidth: colWidths[0] - cellPadding * 2 }) +
-    0.5;
+    0.3; // Reduced from 0.5
 
   const dureeText = `Durée de la formation : ${data.formation_duree || 'N/A'}`;
   descY =
     addText(dureeText, descColX, descY, { fontSize: 9, maxWidth: colWidths[0] - cellPadding * 2 }) +
-    0.5;
+    0.3; // Reduced from 0.5
 
   pdf.setFont('helvetica', 'bold');
   descY = addText('Référence complémentaire :', descColX, descY, {
@@ -258,7 +258,7 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
     { align: 'right' }
   );
 
-  const minRowHeight = 80; // Minimum height for the description section
+  const minRowHeight = 50; // Significantly reduced from 80 to 50
   const actualRowHeight = Math.max(minRowHeight, descY - rowStartY);
   yPos = rowStartY + actualRowHeight;
 
@@ -280,23 +280,23 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
 
   // Dotted lines for empty space if any (visual only)
   pdf.setLineDashPattern([1, 1], 0);
-  const numDottedLines = Math.floor((minRowHeight - (descY - rowStartY) - 5) / 5); // Approx 5mm per line
-  let dottedY = descY + 2;
-  for (let i = 0; i < numDottedLines && dottedY < yPos - 5; i++) {
+  const numDottedLines = Math.floor((minRowHeight - (descY - rowStartY) - 5) / 4); // Reduced spacing from 5 to 4
+  let dottedY = descY + 1; // Reduced from 2
+  for (let i = 0; i < numDottedLines && dottedY < yPos - 3; i++) { // Reduced from 5 to 3
     pdf.line(margin + cellPadding, dottedY, margin + colWidths[0] - cellPadding, dottedY);
-    dottedY += 5;
+    dottedY += 4; // Reduced from 5
   }
   pdf.setLineDashPattern([], 0);
 
   // --- Totals ---
-  yPos += 2; // Gap before totals
+  yPos += 1; // Reduced from 2
   const totalsXAnchor = pageWidth - margin; // Right edge of content
 
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
 
   const addTotalLine = (label: string, value: string, isBoldValue: boolean = false) => {
-    yPos += 6;
+    yPos += 4; // Reduced from 6
     const valueFont = isBoldValue ? 'helvetica' : 'helvetica';
     const valueStyle = isBoldValue ? 'bold' : 'normal';
 
@@ -334,30 +334,30 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
   addTotalLine('TOTAL HT', formatCurrency(data.formation_tarif_ht), true);
   addTotalLine('TVA 20,00 %', formatCurrency(data.montant_tva));
   addTotalLine('Total TTC', formatCurrency(data.formation_tarif_ttc), true);
-  yPos += 6; // final gap
+  yPos += 4; // Reduced from 6
 
   // --- Payment Info ---
-  if (yPos > 200) {
-    // Check if new page is needed
+  // More conservative page break check - only if we're very close to the end
+  if (yPos > 240) { // Increased from 200 to 240 to be more conservative about page breaks
     pdf.addPage();
     yPos = margin;
   }
-  yPos += 10;
+  yPos += 8; // Reduced from 10
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'bold');
   pdf.text('En votre aimable règlement par virement', margin, yPos);
-  yPos += 5;
+  yPos += 4; // Reduced from 5
   pdf.setFont('helvetica', 'normal');
   pdf.text(
     'Références bancaires : IBAN : FR76 1660 7004 3340 0010 5706 393 BIC : CCBPFRPPPPG',
     margin,
     yPos
   );
-  yPos += 10;
+  yPos += 8; // Reduced from 10
 
   // --- Footer ---
-  const footerY = pdf.internal.pageSize.getHeight() - 35;
-  if (yPos > footerY - 10) {
+  const footerY = pdf.internal.pageSize.getHeight() - 25; // Reduced footer margin from 35 to 25
+  if (yPos > footerY - 5) { // Reduced margin from 10 to 5
     pdf.addPage();
     yPos = margin;
   } else {
@@ -370,7 +370,7 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
     "A défaut de paiement comptant à l'échéance, les intérêts de retard seront appliqués suivant les modalités et le taux minimum défini par la loi du 31/12/1992. Taux Refi majoré de 10 points. Indemnité forfaitaire pour frais de recouvrement (sans TVA): 40€";
   const splitFinePrint = pdf.splitTextToSize(finePrint, contentWidth);
   pdf.text(splitFinePrint, margin, yPos);
-  yPos += splitFinePrint.length * 2.5 + 3;
+  yPos += splitFinePrint.length * 2.2 + 2; // Reduced from 2.5 and 3
 
   pdf.setFontSize(8);
   const footerCompanyDetails1 =
@@ -380,9 +380,9 @@ export const generateInvoiceDocument = (data: ConventionData): void => {
   const footerCompanyDetails3 = ': FR344 352 929 41';
 
   pdf.text(footerCompanyDetails1, margin, yPos);
-  yPos += 3.5;
+  yPos += 3; // Reduced from 3.5
   pdf.text(footerCompanyDetails2, margin, yPos);
-  yPos += 3.5;
+  yPos += 3; // Reduced from 3.5
   pdf.text(footerCompanyDetails3, margin, yPos);
 
   // Page Number
