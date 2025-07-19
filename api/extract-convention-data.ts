@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { GoogleGenerativeAI } from '@google/genai';
 
 // Types
 interface ConventionData {
@@ -26,36 +27,32 @@ async function callGeminiAPI(prompt: string) {
     throw new Error('GEMINI_API_KEY is not configured');
   }
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${API_KEY}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+  try {
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash", // Modèle spécifié par l'utilisateur
+      generationConfig: {
+        responseMimeType: 'application/json',
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          responseMimeType: 'application/json'
-        }
-      }),
+    });
+
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+
+    if (!response) {
+      // Gérer le cas où la réponse est bloquée pour des raisons de sécurité
+      console.error('Gemini API response was blocked.', JSON.stringify(result, null, 2));
+      throw new Error('La réponse de l\'API Gemini a été bloquée, probablement pour des raisons de sécurité.');
     }
-  );
 
-  if (!response.ok) {
-    throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+    return response.text();
+  } catch (error) {
+    console.error("Erreur lors de l'appel à l'API Gemini avec le SDK:", error);
+    if (error instanceof Error) {
+      throw new Error(`Erreur de l'API Gemini: ${error.message}`);
+    }
+    throw new Error('Une erreur inconnue est survenue avec l\'API Gemini.');
   }
-
-  const data = await response.json();
-  return data.candidates[0]?.content?.parts[0]?.text || '';
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
