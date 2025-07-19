@@ -27,11 +27,12 @@ async function callGeminiAPI(prompt: string) {
   }
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${API_KEY}`,
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-goog-api-key': API_KEY,
       },
       body: JSON.stringify({
         contents: [
@@ -51,11 +52,18 @@ async function callGeminiAPI(prompt: string) {
   );
 
   if (!response.ok) {
-    throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+    const errorBody = await response.text();
+    throw new Error(`Gemini API error: ${response.status} ${response.statusText}. Body: ${errorBody}`);
   }
 
   const data = await response.json();
-  return data.candidates[0]?.content?.parts[0]?.text || '';
+  
+  if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content?.parts[0]?.text) {
+    console.error('Gemini API response was blocked or empty.', JSON.stringify(data, null, 2));
+    throw new Error('La réponse de l\'API Gemini a été bloquée ou est vide.');
+  }
+
+  return data.candidates[0].content.parts[0].text;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
